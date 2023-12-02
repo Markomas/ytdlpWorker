@@ -1,26 +1,32 @@
 package config
 
 import (
-	"fmt"
+	"github.com/Markomas/ytdlpWorker/internal/http"
+	"github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Redis *redis.Config `mapstructure:"redis"`
+	Name string      `mapstructure:"name"`
+	Http http.Config `mapstructure:"http"`
 }
 
-func LoadConfig(path string) {
+func LoadConfig(path string) (*Config, error) {
 	viper.SetConfigType("yaml")
 	viper.SetConfigFile(path)
 
-	err := viper.ReadInConfig() // Find and read the config file
-	if err != nil {             // Handle errors reading the config file
-		panic(fmt.Errorf("fatal error config file: %w", err))
+	err := viper.ReadInConfig()
+	if err != nil {
+		return nil, err
 	}
 
 	var config Config
 
-	err = viper.Unmarshal(&config)
+	if err := viper.Unmarshal(&config); err != nil {
+		return nil, err
+	}
 
-	fmt.Println(config.Host)
+	defaults.SetDefaults(&config)
+
+	return &config, nil
 }

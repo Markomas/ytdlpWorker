@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-	"ytdlpWorker/internal/config"
+	"github.com/Markomas/ytdlpWorker/internal/config"
+	"github.com/Markomas/ytdlpWorker/internal/http"
 )
 
 func main() {
@@ -10,5 +11,12 @@ func main() {
 	flag.StringVar(&configPath, "config", "config.yml", "Path to the configuration file")
 	flag.Parse()
 
-	config.LoadConfig(configPath)
+	conf, err := config.LoadConfig(configPath)
+	if err != nil {
+		panic(err)
+	}
+
+	var app *http.App
+	app = http.NewApp(conf.Http)
+	app.Run()
 }
