@@ -1,0 +1,8 @@
+POST {{host}}/queue/add-to-queue
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=QH2a6V-W87U"
+}
+
+###

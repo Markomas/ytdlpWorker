@@ -1,14 +1,20 @@
 package config
 
 import (
+	"github.com/Markomas/ytdlpWorker/internal/downloader"
 	"github.com/Markomas/ytdlpWorker/internal/http"
+	"github.com/Markomas/ytdlpWorker/internal/service/queue"
+	"github.com/Markomas/ytdlpWorker/internal/service/redis"
 	"github.com/mcuadros/go-defaults"
 	"github.com/spf13/viper"
 )
 
 type Config struct {
-	Name string      `mapstructure:"name"`
-	Http http.Config `mapstructure:"http"`
+	Name       string            `mapstructure:"name"`
+	Http       http.Config       `mapstructure:"http"`
+	Redis      redis.Config      `mapstructure:"redis"`
+	Downloader downloader.Config `mapstructure:"downloader"`
+	Queue      queue.Config      `mapstructure:"queue"`
 }
 
 func LoadConfig(path string) (*Config, error) {

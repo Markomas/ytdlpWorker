@@ -1,28 +1,59 @@
 package http
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/adjust/rmq/v5"
+	"github.com/opentracing/opentracing-go/log"
 	"net/http"
 )
 
 type App struct {
-	Config *Config
+	config        *Config
+	rmqConnection rmq.Connection
 }
 
-func NewApp(config Config) *App {
+type Services struct {
+	RmqConnection rmq.Connection
+}
+
+func NewApp(config Config, services Services) *App {
 	return &App{
-		Config: &config,
+		config:        &config,
+		rmqConnection: services.RmqConnection,
 	}
 }
 
 func (app *App) Run() error {
-	http.HandleFunc("/add-to-queue/add-to-queue", app.handleAddToQueue)
+	mux := http.NewServeMux()
 
-	fmt.Printf("Starting server on port %s:%d\n", app.Config.Host, app.Config.Port)
-	err := http.ListenAndServe(fmt.Sprintf("%s:%d", app.Config.Host, app.Config.Port), nil)
+	mux.HandleFunc("/queue/add-to-queue", app.handleQueueAdd)
+	mux.HandleFunc("/queue/purge-queue", app.handleQueuePurge)
+	mux.Handle("/queue/overview", NewQueueOverviewHandler(app.rmqConnection))
+
+	fmt.Printf("Starting server on port %s:%d\n", app.config.Host, app.config.Port)
+	err := http.ListenAndServe(fmt.Sprintf("%s:%d", app.config.Host, app.config.Port), mux)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func errorMessage(w http.ResponseWriter, err error) {
+
+	log.Error(err)
+
+	message := JsonMessage{
+		Response: "",
+		Error:    err.Error(),
+	}
+
+	jsonMessage, err := json.Marshal(message)
+
+	if err != nil {
+		return
+	}
+
+	w.Write(jsonMessage)
 }
