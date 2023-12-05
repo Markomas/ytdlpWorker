@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func (app *App) handleQueuePurge(w http.ResponseWriter, r *http.Request) {
+func (app *App) handleQueuePurge(w http.ResponseWriter, _ *http.Request) {
 	queue, err := app.rmqConnection.OpenQueue(DownloadQueueName)
 	if err != nil {
 		errorMessage(w, err)
@@ -37,5 +37,8 @@ func (app *App) handleQueuePurge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Write(jsonMessage)
+	_, err = w.Write(jsonMessage)
+	if err != nil {
+		return
+	}
 }

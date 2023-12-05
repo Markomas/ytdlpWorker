@@ -30,5 +30,8 @@ func (handler *QueueOverviewHandler) ServeHTTP(writer http.ResponseWriter, reque
 	}
 
 	log.Printf("queue stats\n%s", stats)
-	fmt.Fprint(writer, stats.GetHtml(layout, refresh))
+	_, err = fmt.Fprint(writer, stats.GetHtml(layout, refresh))
+	if err != nil {
+		return
+	}
 }
