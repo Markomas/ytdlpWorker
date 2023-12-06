@@ -1,3 +1,10 @@
+GET {{host}}/queue/purge-queue
+Accept: application/json
+
+###
+GET {{host}}/queue/overview
+
+###
 POST {{host}}/queue/add-to-queue
 Content-Type: application/json
 

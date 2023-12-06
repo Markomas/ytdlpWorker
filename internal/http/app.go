@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/Markomas/ytdlpWorker/internal/service/queue"
 	"github.com/adjust/rmq/v5"
 	"github.com/opentracing/opentracing-go/log"
 	"net/http"
@@ -10,17 +11,20 @@ import (
 
 type App struct {
 	config        *Config
-	rmqConnection rmq.Connection
+	rmqConnection *rmq.Connection
+	queueClient   *queue.Client
 }
 
 type Services struct {
-	RmqConnection rmq.Connection
+	RmqConnection *rmq.Connection
+	QueueClient   *queue.Client
 }
 
 func NewApp(config Config, services Services) *App {
 	return &App{
 		config:        &config,
 		rmqConnection: services.RmqConnection,
+		queueClient:   services.QueueClient,
 	}
 }
 
@@ -29,7 +33,7 @@ func (app *App) Run() error {
 
 	mux.HandleFunc("/queue/add-to-queue", app.handleQueueAdd)
 	mux.HandleFunc("/queue/purge-queue", app.handleQueuePurge)
-	mux.Handle("/queue/overview", NewQueueOverviewHandler(app.rmqConnection))
+	mux.Handle("/queue/overview", NewQueueOverviewHandler(*app.queueClient))
 
 	fmt.Printf("Starting server on port %s:%d\n", app.config.Host, app.config.Port)
 	err := http.ListenAndServe(fmt.Sprintf("%s:%d", app.config.Host, app.config.Port), mux)

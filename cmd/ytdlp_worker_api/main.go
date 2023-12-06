@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/Markomas/ytdlpWorker/internal/config"
 	"github.com/Markomas/ytdlpWorker/internal/http"
+	"github.com/Markomas/ytdlpWorker/internal/service/queue"
 	"github.com/adjust/rmq/v5"
 	"github.com/opentracing/opentracing-go/log"
 )
@@ -24,8 +25,11 @@ func main() {
 		panic(err)
 	}
 
+	queueClient := queue.NewClient(RmqConnection)
+
 	var services http.Services
-	services.RmqConnection = RmqConnection
+	services.RmqConnection = &RmqConnection
+	services.QueueClient = queueClient
 
 	var app *http.App
 	app = http.NewApp(conf.Http, services)

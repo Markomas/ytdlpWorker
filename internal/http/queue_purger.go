@@ -8,26 +8,14 @@ import (
 )
 
 func (app *App) handleQueuePurge(w http.ResponseWriter, _ *http.Request) {
-	queue, err := app.rmqConnection.OpenQueue(DownloadQueueName)
-	if err != nil {
-		errorMessage(w, err)
-		return
-	}
-
-	countRejected, err := queue.PurgeRejected()
-	if err != nil {
-		errorMessage(w, err)
-		return
-	}
-
-	countReady, err := queue.PurgeReady()
+	count, err := app.queueClient.PurgeAll()
 	if err != nil {
 		errorMessage(w, err)
 		return
 	}
 
 	message := JsonMessage{
-		Response: fmt.Sprintf("Purged %d messages from queue", countReady+countRejected),
+		Response: fmt.Sprintf("Purged %d messages from queue", count),
 		Error:    "",
 	}
 

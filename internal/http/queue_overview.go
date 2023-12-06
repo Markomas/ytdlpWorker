@@ -2,31 +2,27 @@ package http
 
 import (
 	"fmt"
-	"github.com/adjust/rmq/v5"
+	"github.com/Markomas/ytdlpWorker/internal/service/queue"
 	"log"
 	"net/http"
 )
 
 type QueueOverviewHandler struct {
-	connection rmq.Connection
+	client queue.Client
 }
 
-func NewQueueOverviewHandler(connection rmq.Connection) *QueueOverviewHandler {
-	return &QueueOverviewHandler{connection: connection}
+func NewQueueOverviewHandler(connection queue.Client) *QueueOverviewHandler {
+	return &QueueOverviewHandler{client: connection}
 }
 
 func (handler *QueueOverviewHandler) ServeHTTP(writer http.ResponseWriter, request *http.Request) {
 	layout := request.FormValue("layout")
 	refresh := request.FormValue("refresh")
 
-	queues, err := handler.connection.GetOpenQueues()
+	stats, err := handler.client.GetStats()
 	if err != nil {
-		panic(err)
-	}
-
-	stats, err := handler.connection.CollectStats(queues)
-	if err != nil {
-		panic(err)
+		errorMessage(writer, err)
+		return
 	}
 
 	log.Printf("queue stats\n%s", stats)

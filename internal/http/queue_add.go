@@ -21,20 +21,14 @@ func (app *App) handleQueueAdd(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jobs, err := app.rmqConnection.OpenQueue(DownloadQueueName)
-	if err != nil {
-		errorMessage(w, &UnexpectedError{err: err})
-		return
-	}
-
 	jobBytes, err := json.Marshal(job)
 	if err != nil {
 		errorMessage(w, &UnexpectedError{err: err})
 		return
 	}
 
-	err2 := jobs.PublishBytes(jobBytes)
-	if err2 != nil {
+	err = app.queueClient.AddToQueue(DownloadQueueName, jobBytes)
+	if err != nil {
 		errorMessage(w, &UnexpectedError{err: err})
 		return
 	}
